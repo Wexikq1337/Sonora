@@ -35,6 +35,20 @@ for f in android/app/build.gradle android/app/build.gradle.kts; do
   echo "patched minSdk=24 in $f"
 done
 
+# Release builds need INTERNET explicitly, and self-hosted servers are usually
+# plain http:// on the LAN, which Android 9+ blocks unless cleartext is allowed.
+MF="$ROOT/android/app/src/main/AndroidManifest.xml"
+if [ -f "$MF" ]; then
+  if ! grep -q 'android.permission.INTERNET' "$MF"; then
+    sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET" />\n    <application|' "$MF"
+    echo "added INTERNET permission"
+  fi
+  if ! grep -q 'usesCleartextTraffic' "$MF"; then
+    sed -i 's|<application|<application android:usesCleartextTraffic="true"|' "$MF"
+    echo "enabled cleartext http for LAN servers"
+  fi
+fi
+
 echo
 echo "Done. Next:"
 echo "  flutter pub get"

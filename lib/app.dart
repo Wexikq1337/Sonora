@@ -6,6 +6,7 @@ import 'core/palette.dart';
 import 'core/theme.dart';
 import 'models/settings.dart';
 import 'services/discord/discord_presence_service.dart';
+import 'state/library_controller.dart';
 import 'state/performance_monitor.dart';
 import 'state/player_controller.dart';
 import 'state/settings_controller.dart';
@@ -21,6 +22,7 @@ class SonoraApp extends StatefulWidget {
 
 class _SonoraAppState extends State<SonoraApp> {
   late final SettingsController _settings;
+  late final LibraryController _library;
   late final PlayerController _player;
   late final DiscordPresenceService _discord;
   bool _ready = false;
@@ -29,8 +31,10 @@ class _SonoraAppState extends State<SonoraApp> {
   void initState() {
     super.initState();
     _settings = SettingsController();
-    _player = PlayerController(_settings);
+    _library = LibraryController();
+    _player = PlayerController(_settings, _library);
     _discord = DiscordPresenceService(_settings);
+    _library.onChanged = _player.poke;
     _boot();
   }
 
@@ -38,6 +42,7 @@ class _SonoraAppState extends State<SonoraApp> {
     try {
       PerformanceMonitor.instance.start();
       await _settings.load();
+      await _library.load();
       await _player.init();
       await _player.setVolume(_settings.value.volume);
 
@@ -68,8 +73,10 @@ class _SonoraAppState extends State<SonoraApp> {
   void dispose() {
     _player.removeListener(_syncDiscord);
     _player.position.removeListener(_syncDiscord);
+    _library.onChanged = null;
     _discord.dispose();
     _player.dispose();
+    _library.dispose();
     _settings.dispose();
     super.dispose();
   }
@@ -94,6 +101,7 @@ class _SonoraAppState extends State<SonoraApp> {
         return SonoraScope(
           settings: _settings,
           player: _player,
+          library: _library,
           discord: _discord,
           child: MaterialApp(
             title: 'Sonora',

@@ -6,15 +6,18 @@ import 'package:flutter/foundation.dart';
 import '../audio/audio_engine.dart';
 import '../models/demo_library.dart';
 import '../models/track.dart';
+import 'library_controller.dart';
 import 'settings_controller.dart';
 
 enum LoopMode { off, all, one }
 
-/// Playback state machine. Owns the queue, the transport and the "liked" set.
+/// Playback state machine. Owns the queue and the transport; favourites and
+/// history live in [LibraryController].
 class PlayerController extends ChangeNotifier {
-  PlayerController(this._settings);
+  PlayerController(this._settings, this._library);
 
   final SettingsController _settings;
+  final LibraryController _library;
   final Random _random = Random();
 
   AudioEngine? _engine;
@@ -33,7 +36,6 @@ class PlayerController extends ChangeNotifier {
 
   final ValueNotifier<Duration> position =
       ValueNotifier<Duration>(Duration.zero);
-  final Set<String> _liked = <String>{};
 
   List<Track> get queue => List<Track>.unmodifiable(_queue);
   int get index => _index;
@@ -43,7 +45,7 @@ class PlayerController extends ChangeNotifier {
   bool get audioAvailable => _audioAvailable;
   String get engineKind => _engineKind;
   String? get error => _error;
-  Set<String> get liked => Set<String>.unmodifiable(_liked);
+  Set<String> get liked => _library.likedIds;
 
   Track? get current =>
       (_queue.isEmpty || _index < 0 || _index >= _queue.length) ? null : _queue[_index];
@@ -56,7 +58,7 @@ class PlayerController extends ChangeNotifier {
     return (position.value.inMilliseconds / total).clamp(0.0, 1.0).toDouble();
   }
 
-  bool isLiked(String id) => _liked.contains(id);
+  bool isLiked(String id) => _library.isLiked(id);
 
   Future<void> init() async {
     final AudioplayersEngine real = AudioplayersEngine();
@@ -108,11 +110,13 @@ class PlayerController extends ChangeNotifier {
     _error = null;
     position.value = Duration.zero;
     try {
-      await _engine?.load(t.asset, t.duration);
+      await _engine?.load(t.isRemote ? t.url! : t.asset, t.duration,
+          remote: t.isRemote);
       await _engine?.setVolume(_settings.value.volume);
       await _engine?.play();
       _playing = true;
       _loadedId = t.id;
+      _library.logPlay(t.id);
     } catch (e) {
       _error = '$e';
       _playing = false;
@@ -219,10 +223,11 @@ class PlayerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleLike(String id) {
-    if (!_liked.remove(id)) _liked.add(id);
-    notifyListeners();
-  }
+  void toggleLike(String id) => _library.toggleLike(id);
+
+  /// Lets the library controller re-broadcast state so heart buttons
+  /// (which listen to the player) refresh after a like/history change.
+  void poke() => notifyListeners();
 
   Future<void> setVolume(double v) async {
     await _engine?.setVolume(v);

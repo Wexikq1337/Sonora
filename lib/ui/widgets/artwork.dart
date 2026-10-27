@@ -51,34 +51,17 @@ class Artwork extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: <Color>[
-                        track.colorA,
-                        Color.lerp(track.colorA, track.colorB, 0.55)!,
-                        track.colorB,
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: -w * 0.30,
-                  top: -h * 0.35,
-                  child: _blob(w * 0.95, Colors.white.withOpacity(0.34)),
-                ),
-                Positioned(
-                  right: -w * 0.28,
-                  bottom: -h * 0.32,
-                  child: _blob(w * 0.85, Colors.white.withOpacity(0.12)),
-                ),
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _ArtPainter(seed: track.id.hashCode, w: w, h: h),
-                  ),
-                ),
+                if (track.artUrl != null && track.artUrl!.isNotEmpty)
+                  Image.network(
+                    track.artUrl!,
+                    fit: BoxFit.cover,
+                    gaplessPlayback: true,
+                    errorBuilder:
+                        (BuildContext ctx, Object err, StackTrace? st) =>
+                            _procedural(w, h),
+                  )
+                else
+                  _procedural(w, h),
                 Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -117,6 +100,42 @@ class Artwork extends StatelessWidget {
       ),
     );
   }
+
+  /// Gradient + blobs + generated pattern — used when there is no remote
+  /// cover, and as the fallback when a network image fails to load.
+  Widget _procedural(double w, double h) => Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  track.colorA,
+                  Color.lerp(track.colorA, track.colorB, 0.55)!,
+                  track.colorB,
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: -w * 0.30,
+            top: -h * 0.35,
+            child: _blob(w * 0.95, Colors.white.withOpacity(0.34)),
+          ),
+          Positioned(
+            right: -w * 0.28,
+            bottom: -h * 0.32,
+            child: _blob(w * 0.85, Colors.white.withOpacity(0.12)),
+          ),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _ArtPainter(seed: track.id.hashCode, w: w, h: h),
+            ),
+          ),
+        ],
+      );
 
   Widget _blob(double size, Color color) => Container(
         width: size,

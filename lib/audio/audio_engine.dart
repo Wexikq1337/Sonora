@@ -15,7 +15,7 @@ abstract class AudioEngine {
 
   Future<bool> init();
 
-  Future<void> load(String asset, Duration duration);
+  Future<void> load(String asset, Duration duration, {bool remote = false});
 
   Future<void> play();
 
@@ -68,10 +68,14 @@ class AudioplayersEngine implements AudioEngine {
   }
 
   @override
-  Future<void> load(String asset, Duration duration) async {
+  Future<void> load(String asset, Duration duration, {bool remote = false}) async {
     if (!_ready) return;
     await _player.stop();
-    await _player.setSource(AssetSource(asset));
+    if (remote) {
+      await _player.setSource(UrlSource(asset));
+    } else {
+      await _player.setSource(AssetSource(asset));
+    }
   }
 
   @override
@@ -132,7 +136,8 @@ class SimulatedEngine implements AudioEngine {
   Future<bool> init() async => true;
 
   @override
-  Future<void> load(String asset, Duration duration) async {
+  Future<void> load(String asset, Duration duration,
+      {bool remote = false}) async {
     _timer?.cancel();
     _position = Duration.zero;
     _duration = duration;

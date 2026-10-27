@@ -40,6 +40,22 @@ foreach ($f in @("$root\android\app\build.gradle", "$root\android\app\build.grad
   }
 }
 
+# Release builds need INTERNET explicitly, and self-hosted servers are usually
+# plain http:// on the LAN, which Android 9+ blocks unless cleartext is allowed.
+$mf = Join-Path $root "android\app\src\main\AndroidManifest.xml"
+if (Test-Path $mf) {
+  $x = Get-Content $mf -Raw
+  if ($x -notmatch 'android.permission.INTERNET') {
+    $x = $x -replace '<application', '<uses-permission android:name="android.permission.INTERNET" />' + "`r`n    " + '<application'
+    Write-Host "added INTERNET permission" -ForegroundColor Green
+  }
+  if ($x -notmatch 'usesCleartextTraffic') {
+    $x = $x -replace '<application', '<application android:usesCleartextTraffic="true"'
+    Write-Host "enabled cleartext http for LAN servers" -ForegroundColor Green
+  }
+  Set-Content -Path $mf -Value $x -NoNewline
+}
+
 Write-Host ""
 Write-Host "Done. Next:" -ForegroundColor Cyan
 Write-Host "  flutter pub get"

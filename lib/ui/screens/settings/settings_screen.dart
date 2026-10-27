@@ -7,6 +7,7 @@ import '../../../core/palette.dart';
 import '../../../models/settings.dart';
 import '../../../models/track.dart';
 import '../../../services/local_store.dart';
+import '../../../services/subsonic/subsonic_client.dart';
 import '../../../state/performance_monitor.dart';
 import '../../animations/motion.dart';
 import '../../glass/glass.dart';
@@ -901,12 +902,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: 'Источники',
       subtitle: 'Аккаунты, приоритет и участие в поиске',
       children: <Widget>[
+        const _ServerCard(),
         for (int i = 0; i < MusicSource.values.length; i++)
           _SourceCard(source: MusicSource.values[i], connected: i < 3),
         const InfoNote(
           text: 'Подключение Яндекс/VK/Apple/SoundCloud требует официальных '
               'договоров и DRM — в демо это заглушки. Реально работают '
-              'локальные файлы и self-hosted (Navidrome/Jellyfin).',
+              'сервер выше и локальные файлы.',
           icon: Icons.gavel_rounded,
         ),
       ],
@@ -1568,6 +1570,205 @@ class _ThemeChip extends StatelessWidget {
                     fontWeight:
                         selected ? FontWeight.w700 : FontWeight.w500)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ServerCard extends StatefulWidget {
+  const _ServerCard();
+
+  @override
+  State<_ServerCard> createState() => _ServerCardState();
+}
+
+class _ServerCardState extends State<_ServerCard> {
+  bool _init = false;
+  bool _busy = false;
+  bool _ok = false;
+  String? _status;
+  late final TextEditingController _url;
+  late final TextEditingController _user;
+  late final TextEditingController _pass;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_init) return;
+    _init = true;
+    final ServerSettings s = SonoraScope.of(context).s.server;
+    _url = TextEditingController(text: s.url);
+    _user = TextEditingController(text: s.user);
+    _pass = TextEditingController(text: s.password);
+  }
+
+  @override
+  void dispose() {
+    _url.dispose();
+    _user.dispose();
+    _pass.dispose();
+    super.dispose();
+  }
+
+  Future<void> _test() async {
+    final SonoraScope scope = SonoraScope.of(context);
+    setState(() {
+      _busy = true;
+      _status = 'Проверяю соединение…';
+      _ok = false;
+    });
+    final ServerSettings cfg = ServerSettings(
+      url: _url.text,
+      user: _user.text,
+      password: _pass.text,
+      enabled: true,
+    );
+    try {
+      final String info = await SubsonicClient(cfg).ping();
+      if (!mounted) return;
+      scope.settings.update((AppSettings s) => s.copyWith(server: cfg));
+      setState(() {
+        _busy = false;
+        _ok = true;
+        _status = 'Подключено · $info';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _ok = false;
+        _status = '$e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final SonoraScope scope = SonoraScope.of(context);
+    final AppPalette pal = scope.palette;
+    final ServerSettings cfg = scope.s.server;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: LiquidGlass(
+        radius: 20,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.dns_rounded, size: 18, color: pal.accent),
+                const SizedBox(width: 8),
+                Text('Navidrome / Subsonic',
+                    style: TextStyle(
+                        color: pal.text,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700)),
+                const Spacer(),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cfg.isConfigured
+                        ? const Color(0xFF57F287)
+                        : pal.muted.withOpacity(0.15),
+                    boxShadow: cfg.isConfigured
+                        ? <BoxShadow>[
+                            const BoxShadow(
+                                color: Color(0xFF57F287), blurRadius: 8)
+                          ]
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Своя музыка с домашнего сервера. Подходит Navidrome, Airsonic, '
+              'Gonic и любой Subsonic-совместимый сервер.',
+              style: TextStyle(color: pal.muted, fontSize: 11, height: 1.35),
+            ),
+            const SizedBox(height: 12),
+            _field(pal, 'Адрес сервера', 'http://192.168.1.10:4533', _url),
+            _field(pal, 'Логин', 'admin', _user),
+            _field(pal, 'Пароль', '••••••', _pass, obscure: true),
+            const SizedBox(height: 4),
+            Row(
+              children: <Widget>[
+                GlassChip(
+                  label: _busy ? 'Проверяю…' : 'Проверить и сохранить',
+                  icon: Icons.link_rounded,
+                  selected: true,
+                  onTap: _busy ? null : _test,
+                ),
+                const SizedBox(width: 8),
+                if (cfg.isConfigured)
+                  GlassChip(
+                    label: 'Отключить',
+                    icon: Icons.link_off_rounded,
+                    onTap: () => scope.settings.update((AppSettings s) =>
+                        s.copyWith(
+                            server: s.server.copyWith(enabled: false))),
+                  ),
+              ],
+            ),
+            if (_status != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                _status!,
+                style: TextStyle(
+                  color: _ok ? const Color(0xFF57F287) : const Color(0xFFFF6B6B),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+            const InfoNote(
+              text: 'Пароль хранится в settings.json открытым текстом. Это '
+                  'домашний сервер, а не сейф — для интернета закрой его VPN.',
+              icon: Icons.lock_rounded,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _field(
+    AppPalette pal,
+    String label,
+    String hint,
+    TextEditingController c, {
+    bool obscure = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TextField(
+        controller: c,
+        obscureText: obscure,
+        style: TextStyle(color: pal.text, fontSize: 13),
+        cursorColor: pal.accent,
+        decoration: InputDecoration(
+          isDense: true,
+          filled: true,
+          fillColor: Colors.black.withOpacity(0.24),
+          labelText: label,
+          hintText: hint,
+          labelStyle: TextStyle(color: pal.muted, fontSize: 11.5),
+          hintStyle:
+              TextStyle(color: pal.muted.withOpacity(0.55), fontSize: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(11),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.09)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(11),
+            borderSide: BorderSide(color: pal.accent, width: 1.2),
+          ),
         ),
       ),
     );

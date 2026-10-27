@@ -372,12 +372,67 @@ class DiscordSettings {
       );
 }
 
+/// Self-hosted music server (Subsonic API: Navidrome, Airsonic, Gonic, …).
+class ServerSettings {
+  const ServerSettings({
+    this.url = '',
+    this.user = '',
+    this.password = '',
+    this.name = 'Navidrome',
+    this.enabled = false,
+  });
+
+  final String url;
+  final String user;
+
+  /// Stored in settings.json as-is. Local self-hosted server: acceptable,
+  /// but this is NOT a secret vault (see the warning in the UI).
+  final String password;
+  final String name;
+  final bool enabled;
+
+  bool get isConfigured =>
+      url.trim().isNotEmpty && user.trim().isNotEmpty && enabled;
+
+  ServerSettings copyWith({
+    String? url,
+    String? user,
+    String? password,
+    String? name,
+    bool? enabled,
+  }) =>
+      ServerSettings(
+        url: url ?? this.url,
+        user: user ?? this.user,
+        password: password ?? this.password,
+        name: name ?? this.name,
+        enabled: enabled ?? this.enabled,
+      );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'url': url,
+        'user': user,
+        'password': password,
+        'name': name,
+        'enabled': enabled,
+      };
+
+  factory ServerSettings.fromJson(Map<String, dynamic> j) => ServerSettings(
+        url: _s(j['url'], ''),
+        user: _s(j['user'], ''),
+        password: _s(j['password'], ''),
+        name: _s(j['name'], 'Navidrome'),
+        enabled: _b(j['enabled'], false),
+      );
+}
+
 class AppSettings {
   const AppSettings({
     this.glass = const GlassSettings(),
     this.anim = const AnimationSettings(),
     this.appearance = const AppearanceSettings(),
     this.discord = const DiscordSettings(),
+    this.server = const ServerSettings(),
     this.volume = 0.8,
     this.quality = 'auto', // auto | high | balanced | low
     this.showFps = false,
@@ -392,6 +447,7 @@ class AppSettings {
   final AnimationSettings anim;
   final AppearanceSettings appearance;
   final DiscordSettings discord;
+  final ServerSettings server;
   final double volume;
   final String quality;
   final bool showFps;
@@ -410,6 +466,7 @@ class AppSettings {
     AnimationSettings? anim,
     AppearanceSettings? appearance,
     DiscordSettings? discord,
+    ServerSettings? server,
     double? volume,
     String? quality,
     bool? showFps,
@@ -424,6 +481,7 @@ class AppSettings {
         anim: anim ?? this.anim,
         appearance: appearance ?? this.appearance,
         discord: discord ?? this.discord,
+        server: server ?? this.server,
         volume: volume ?? this.volume,
         quality: quality ?? this.quality,
         showFps: showFps ?? this.showFps,
@@ -439,6 +497,7 @@ class AppSettings {
         'anim': anim.toJson(),
         'appearance': appearance.toJson(),
         'discord': discord.toJson(),
+        'server': server.toJson(),
         'volume': volume,
         'quality': quality,
         'showFps': showFps,
@@ -460,6 +519,8 @@ class AppSettings {
             (j['appearance'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
         discord: DiscordSettings.fromJson(
             (j['discord'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
+        server: ServerSettings.fromJson(
+            (j['server'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
         volume: _d(j['volume'], 0.8),
         quality: _s(j['quality'], 'auto'),
         showFps: _b(j['showFps'], false),

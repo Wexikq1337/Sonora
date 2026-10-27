@@ -3,23 +3,26 @@ import 'package:flutter/widgets.dart';
 import 'core/palette.dart';
 import 'models/settings.dart';
 import 'services/discord/discord_presence_service.dart';
+import 'state/library_controller.dart';
 import 'state/player_controller.dart';
 import 'state/settings_controller.dart';
 
-/// Dependency injection for the whole app: settings, player and Discord
-/// presence. Widgets read it with `SonoraScope.of(context)`; rebuilds are
-/// driven by the individual controllers, not by this inherited widget.
+/// Dependency injection for the whole app: settings, player, library and
+/// Discord presence. Widgets read it with `SonoraScope.of(context)`; rebuilds
+/// are driven by the individual controllers, not by this inherited widget.
 class SonoraScope extends InheritedWidget {
   const SonoraScope({
     super.key,
     required this.settings,
     required this.player,
+    required this.library,
     required this.discord,
     required super.child,
   });
 
   final SettingsController settings;
   final PlayerController player;
+  final LibraryController library;
   final DiscordPresenceService discord;
 
   AppSettings get s => settings.value;
@@ -40,5 +43,6 @@ class SonoraScope extends InheritedWidget {
   bool updateShouldNotify(SonoraScope oldWidget) =>
       settings != oldWidget.settings ||
       player != oldWidget.player ||
+      library != oldWidget.library ||
       discord != oldWidget.discord;
 }

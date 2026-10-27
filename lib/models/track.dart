@@ -114,6 +114,8 @@ class Track {
     this.year = 2026,
     this.bpm = 90,
     this.liked = false,
+    this.url,
+    this.artUrl,
   });
 
   final String id;
@@ -126,12 +128,20 @@ class Track {
   /// Path inside `assets/`, e.g. `audio/neon_drift.wav`.
   final String asset;
 
+  /// Remote stream URL (Subsonic/Navidrome). When set, [asset] is ignored.
+  final String? url;
+
+  /// Remote cover art URL (already includes auth params).
+  final String? artUrl;
+
   /// Palette used to render procedural cover art (no bitmaps shipped).
   final Color colorA;
   final Color colorB;
   final int year;
   final int bpm;
   final bool liked;
+
+  bool get isRemote => url != null && url!.isNotEmpty;
 
   Track copyWith({bool? liked}) => Track(
         id: id,
@@ -146,5 +156,7 @@ class Track {
         year: year,
         bpm: bpm,
         liked: liked ?? this.liked,
+        url: url,
+        artUrl: artUrl,
       );
 }
