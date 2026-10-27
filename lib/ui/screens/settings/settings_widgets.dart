@@ -174,7 +174,7 @@ class SettingRow extends StatelessWidget {
                       Tooltip(
                         message: tooltip!,
                         waitDuration: const Duration(milliseconds: 350),
-                        child: Icon(Icons.help_outline_rounded,
+                        child: Icon(Icons.help_rounded,
                             size: 13, color: pal.muted.withOpacity(0.8)),
                       ),
                     ],
@@ -408,7 +408,7 @@ class LockedField extends StatelessWidget {
 }
 
 class InfoNote extends StatelessWidget {
-  const InfoNote({super.key, required this.text, this.icon = Icons.info_outline_rounded});
+  const InfoNote({super.key, required this.text, this.icon = Icons.info_rounded});
   final String text;
   final IconData icon;
 

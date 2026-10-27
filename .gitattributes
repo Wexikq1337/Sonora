@@ -1,0 +1,9 @@
+# Normalise line endings so a Windows checkout still produces a valid
+# bash script and GLSL file for the Linux/Android CI runners.
+* text=auto
+*.sh   text eol=lf
+*.frag text eol=lf
+*.yml  text eol=lf
+*.iss  text eol=crlf
+*.ps1  text eol=crlf
+*.wav  binary

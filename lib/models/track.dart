@@ -84,7 +84,7 @@ extension MusicSourceX on MusicSource {
       case MusicSource.ytmusic:
         return Icons.play_circle_fill_rounded;
       case MusicSource.apple:
-        return Icons.apple_rounded;
+        return Icons.audiotrack_rounded;
       case MusicSource.yandex:
         return Icons.language_rounded;
       case MusicSource.vk:

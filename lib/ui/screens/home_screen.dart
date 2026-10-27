@@ -263,7 +263,7 @@ class _SourceStrip extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Icon(Icons.hub_rounded, size: 15, color: pal.muted),
+            Icon(Icons.device_hub_rounded, size: 15, color: pal.muted),
             const SizedBox(width: 6),
             Text('Источники',
                 style: TextStyle(

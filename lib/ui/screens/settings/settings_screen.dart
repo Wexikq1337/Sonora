@@ -30,17 +30,17 @@ const List<_TabDef> _tabs = <_TabDef>[
   _TabDef('Внешний вид', Icons.palette_outlined, 'Темы, фон, курсор, профили'),
   _TabDef('Анимации', Icons.animation_rounded, 'Микро- и макро-анимации'),
   _TabDef('Блюр и Glass', Icons.blur_on_rounded, 'Стекло, размытие, качество'),
-  _TabDef('Плеер', Icons.play_circle_outline_rounded, 'Поведение и мини-плеер'),
+  _TabDef('Плеер', Icons.play_circle_rounded, 'Поведение и мини-плеер'),
   _TabDef('Звук', Icons.graphic_eq_rounded, 'Эквалайзер, эффекты, качество'),
-  _TabDef('Источники', Icons.hub_outlined, 'Аккаунты и авторизация'),
+  _TabDef('Источники', Icons.device_hub_outlined, 'Аккаунты и авторизация'),
   _TabDef('Библиотека', Icons.storage_rounded, 'Кэш, сканирование, синк'),
-  _TabDef('Уведомления и виджет', Icons.notifications_none_rounded,
+  _TabDef('Уведомления и виджет', Icons.notifications_rounded,
       'Виджет, трей, уведомления'),
   _TabDef('Горячие клавиши', Icons.keyboard_outlined, 'Только desktop'),
   _TabDef('Приватность и данные', Icons.shield_outlined,
       'История, телеметрия, экспорт'),
-  _TabDef('О приложении', Icons.info_outline_rounded, 'Версия и лицензии'),
-  _TabDef('Discord', Icons.discord_rounded, 'Rich Presence и профили'),
+  _TabDef('О приложении', Icons.info_rounded, 'Версия и лицензии'),
+  _TabDef('Discord', Icons.chat_bubble_rounded, 'Rich Presence и профили'),
 ];
 
 class SettingsScreen extends StatefulWidget {
@@ -344,7 +344,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: <Widget>[
         SettingsCard(
           title: 'Доступность',
-          icon: Icons.accessibility_new_rounded,
+          icon: Icons.accessibility_rounded,
           children: <Widget>[
             SettingSwitchRow(
               title: 'Уменьшить движение',
@@ -527,9 +527,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               selected: _blurPreset(g.blur),
               onSelect: (String v) {
                 final double b = switch (v) {
-                  'Light' => 8,
-                  'Medium' => 18,
-                  'Heavy' => 30,
+                  'Light' => 8.0,
+                  'Medium' => 18.0,
+                  'Heavy' => 30.0,
                   _ => g.blur,
                 };
                 _upd(context, (AppSettings x) => x.copyWith(glass: x.glass.copyWith(blur: b)));
@@ -716,7 +716,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: <Widget>[
         SettingsCard(
           title: 'Транспорт',
-          icon: Icons.play_circle_outline_rounded,
+          icon: Icons.play_circle_rounded,
           children: <Widget>[
             SettingSwitchRow(
               title: 'Прогресс в мини-плеере',
@@ -972,7 +972,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         SettingsCard(
           title: 'Синхронизация',
-          icon: Icons.cloud_sync_outlined,
+          icon: Icons.sync_rounded,
           children: <Widget>[
             SettingRow(
               title: 'Self-hosted сервер',
@@ -1171,7 +1171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         SettingsCard(
           title: 'Управление',
-          icon: Icons.delete_outline_rounded,
+          icon: Icons.delete_rounded,
           children: <Widget>[
             Wrap(
               spacing: 8,
@@ -1208,7 +1208,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: <Widget>[
         SettingsCard(
           title: 'Диагностика',
-          icon: Icons.monitor_heart_outlined,
+          icon: Icons.monitor_rounded,
           children: <Widget>[
             _kv('Версия', '1.0.0+1', pal),
             _kv('Платформа', Platform.operatingSystem, pal),

@@ -249,7 +249,7 @@ class _EqualizerSheetState extends State<EqualizerSheet> {
               const SizedBox(height: 12),
               Row(
                 children: <Widget>[
-                  Icon(Icons.info_outline_rounded,
+                  Icon(Icons.info_rounded,
                       size: 14, color: pal.muted.withOpacity(0.8)),
                   const SizedBox(width: 6),
                   Expanded(

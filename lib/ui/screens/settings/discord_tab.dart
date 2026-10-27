@@ -109,7 +109,7 @@ class _DiscordTabState extends State<DiscordTab> {
             text: 'На Android Discord RPC официально не работает: IPC-сокет '
                 'существует только в десктопном клиенте. Вкладка остаётся для '
                 'настройки профиля — он применится на desktop.',
-            icon: Icons.android_rounded,
+            icon: Icons.smartphone_rounded,
           ),
         SettingsCard(
           title: 'Приложение Discord',
@@ -207,7 +207,7 @@ class _DiscordTabState extends State<DiscordTab> {
         ),
         SettingsCard(
           title: 'Кнопки в статусе',
-          icon: Icons.smart_button_rounded,
+          icon: Icons.touch_app_rounded,
           subtitle: 'До двух кнопок, label ≤ 32 символа, URL http(s)',
           children: <Widget>[
             SettingSwitchRow(
@@ -293,7 +293,7 @@ class _DiscordTabState extends State<DiscordTab> {
         ),
         SettingsCard(
           title: 'Профили RPC',
-          icon: Icons.workspaces_outline,
+          icon: Icons.dashboard_rounded,
           subtitle: 'Быстрое переключение «Стрим / Чилл / Ночь»',
           children: <Widget>[
             Wrap(
@@ -488,7 +488,7 @@ class _StatusCard extends StatelessWidget {
                     border: Border.all(
                         color: const Color(0xFF5865F2).withOpacity(0.5)),
                   ),
-                  child: const Icon(Icons.discord_rounded,
+                  child: const Icon(Icons.chat_bubble_rounded,
                       size: 19, color: Color(0xFF8B93FF)),
                 ),
                 const SizedBox(width: 11),

@@ -349,7 +349,7 @@ class _DiscordChip extends StatelessWidget {
           onTap: onTap,
           child: Row(
             children: <Widget>[
-              Icon(Icons.discord_rounded, size: 16, color: dot),
+              Icon(Icons.chat_bubble_rounded, size: 16, color: dot),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

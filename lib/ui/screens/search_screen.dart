@@ -240,7 +240,7 @@ class _SearchScreenState extends State<SearchScreen> {
           delayMs: 80,
           child: SectionHeader(
             title: 'Источники',
-            icon: Icons.hub_rounded,
+            icon: Icons.device_hub_rounded,
           ),
         ),
         for (int i = 0; i < MusicSource.values.length; i++)
