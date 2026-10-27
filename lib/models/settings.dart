@@ -10,11 +10,11 @@ String _s(dynamic v, String fallback) => v is String ? v : fallback;
 class GlassSettings {
   const GlassSettings({
     this.enabled = true,
-    this.opacity = 0.22,
-    this.blur = 18,
-    this.refraction = 0.55,
-    this.borderAlpha = 0.30,
-    this.shadow = 0.55,
+    this.opacity = 0.12,
+    this.blur = 22,
+    this.refraction = 0.45,
+    this.borderAlpha = 0.14,
+    this.shadow = 0.35,
     this.noise = true,
     this.particles = false,
     this.highlightHex = '#FFFFFF',
@@ -72,11 +72,11 @@ class GlassSettings {
 
   factory GlassSettings.fromJson(Map<String, dynamic> j) => GlassSettings(
         enabled: _b(j['enabled'], true),
-        opacity: _d(j['opacity'], 0.22),
-        blur: _d(j['blur'], 18),
-        refraction: _d(j['refraction'], 0.55),
-        borderAlpha: _d(j['borderAlpha'], 0.30),
-        shadow: _d(j['shadow'], 0.55),
+        opacity: _d(j['opacity'], 0.12),
+        blur: _d(j['blur'], 22),
+        refraction: _d(j['refraction'], 0.45),
+        borderAlpha: _d(j['borderAlpha'], 0.14),
+        shadow: _d(j['shadow'], 0.35),
         noise: _b(j['noise'], true),
         particles: _b(j['particles'], false),
         highlightHex: _s(j['highlightHex'], '#FFFFFF'),
@@ -433,6 +433,7 @@ class AppSettings {
     this.appearance = const AppearanceSettings(),
     this.discord = const DiscordSettings(),
     this.server = const ServerSettings(),
+    this.soundcloudClientId = '',
     this.volume = 0.8,
     this.quality = 'auto', // auto | high | balanced | low
     this.showFps = false,
@@ -448,6 +449,7 @@ class AppSettings {
   final AppearanceSettings appearance;
   final DiscordSettings discord;
   final ServerSettings server;
+  final String soundcloudClientId;
   final double volume;
   final String quality;
   final bool showFps;
@@ -467,6 +469,7 @@ class AppSettings {
     AppearanceSettings? appearance,
     DiscordSettings? discord,
     ServerSettings? server,
+    String? soundcloudClientId,
     double? volume,
     String? quality,
     bool? showFps,
@@ -482,6 +485,7 @@ class AppSettings {
         appearance: appearance ?? this.appearance,
         discord: discord ?? this.discord,
         server: server ?? this.server,
+        soundcloudClientId: soundcloudClientId ?? this.soundcloudClientId,
         volume: volume ?? this.volume,
         quality: quality ?? this.quality,
         showFps: showFps ?? this.showFps,
@@ -498,6 +502,7 @@ class AppSettings {
         'appearance': appearance.toJson(),
         'discord': discord.toJson(),
         'server': server.toJson(),
+        'soundcloudClientId': soundcloudClientId,
         'volume': volume,
         'quality': quality,
         'showFps': showFps,
@@ -521,6 +526,7 @@ class AppSettings {
             (j['discord'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
         server: ServerSettings.fromJson(
             (j['server'] as Map<String, dynamic>?) ?? <String, dynamic>{}),
+        soundcloudClientId: _s(j['soundcloudClientId'], ''),
         volume: _d(j['volume'], 0.8),
         quality: _s(j['quality'], 'auto'),
         showFps: _b(j['showFps'], false),

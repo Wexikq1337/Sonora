@@ -116,6 +116,7 @@ class Track {
     this.liked = false,
     this.url,
     this.artUrl,
+    this.streamResolver,
   });
 
   final String id;
@@ -133,6 +134,16 @@ class Track {
 
   /// Remote cover art URL (already includes auth params).
   final String? artUrl;
+
+  /// Some providers (SoundCloud) need a second request to turn a transcoding
+  /// endpoint into a direct media URL. Resolved lazily right before playback.
+  final Future<String> Function()? streamResolver;
+
+  Future<String> resolveStream() async {
+    final Future<String> Function()? r = streamResolver;
+    if (r != null) return r();
+    return url ?? '';
+  }
 
   /// Palette used to render procedural cover art (no bitmaps shipped).
   final Color colorA;
@@ -158,5 +169,6 @@ class Track {
         liked: liked ?? this.liked,
         url: url,
         artUrl: artUrl,
+        streamResolver: streamResolver,
       );
 }

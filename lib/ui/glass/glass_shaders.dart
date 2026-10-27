@@ -120,8 +120,8 @@ class GlassBorderPainter extends CustomPainter {
     // inner top highlight (fake inset light)
     final Paint inner = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5)
+      ..strokeWidth = 1.4
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5)
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.center,

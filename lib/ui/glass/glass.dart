@@ -172,21 +172,41 @@ class _LiquidGlassState extends State<LiquidGlass> {
     final Color tintColor = widget.tint ?? pal.accent2;
     final BorderRadius br = BorderRadius.circular(radius);
 
-    final Widget filled = DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: br,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Colors.white.withOpacity(p.opacity * 0.58),
-            Colors.white.withOpacity(p.opacity * 0.12),
-            tintColor.withOpacity(p.opacity * 0.24),
-          ],
-          stops: const <double>[0.0, 0.55, 1.0],
+    final Widget filled = Stack(
+      fit: StackFit.passthrough,
+      children: <Widget>[
+        // Dark translucent base: this is what keeps the UI readable.
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: br,
+              color: Color.alphaBlend(
+                widget.tint != null
+                    ? widget.tint!.withOpacity(0.20)
+                    : Colors.white.withOpacity(0.05 + p.opacity * 0.12),
+                pal.bg1.withOpacity(0.78),
+              ),
+            ),
+          ),
         ),
-      ),
-      child: Padding(padding: widget.padding, child: widget.child),
+        // A whisper of accent tint, bottom-right only.
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: br,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  Colors.transparent,
+                  tintColor.withOpacity(0.035),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(padding: widget.padding, child: widget.child),
+      ],
     );
 
     return LayoutBuilder(

@@ -6,6 +6,7 @@ import '../../app_scope.dart';
 import '../../core/palette.dart';
 import '../../models/demo_library.dart';
 import '../../models/track.dart';
+import '../../services/soundcloud/soundcloud_service.dart';
 import '../animations/motion.dart';
 import '../glass/glass.dart';
 import '../widgets/track_tile.dart';
@@ -25,6 +26,49 @@ class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   bool _searching = false;
   Timer? _debounce;
+
+  List<Track> _scResults = <Track>[];
+  bool _scLoading = false;
+  String? _scError;
+  String _scFor = '';
+
+  Future<void> _runSoundCloud(SonoraScope scope, String q) async {
+    final String cid = scope.s.soundcloudClientId.trim();
+    if (q.length < 2 || cid.isEmpty) {
+      setState(() {
+        _scResults = <Track>[];
+        _scLoading = false;
+        _scError = q.length >= 2 && cid.isEmpty
+            ? 'SoundCloud: добавь client_id в Настройки → Источники'
+            : null;
+      });
+      return;
+    }
+    if (_scFor == q) return;
+    _scFor = q;
+    setState(() {
+      _scLoading = true;
+      _scError = null;
+    });
+    final SoundCloudService svc = SoundCloudService(cid);
+    try {
+      final List<Track> r = await svc.search(q);
+      if (!mounted || _scFor != q) return;
+      setState(() {
+        _scResults = r;
+        _scLoading = false;
+      });
+    } catch (e) {
+      if (!mounted || _scFor != q) return;
+      setState(() {
+        _scLoading = false;
+        _scError = '$e';
+        _scResults = <Track>[];
+      });
+    } finally {
+      svc.dispose();
+    }
+  }
 
   static const List<String> _suggestions = <String>[
     'ambient',
@@ -53,6 +97,7 @@ class _SearchScreenState extends State<SearchScreen> {
     _debounce = Timer(const Duration(milliseconds: 280), () {
       if (!mounted) return;
       setState(() => _searching = false);
+      _runSoundCloud(SonoraScope.of(context), q);
     });
   }
 
@@ -178,35 +223,108 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _body(SonoraScope scope, List<Track> results) {
     if (_query.isEmpty) return _idle(scope);
     if (_searching) return _skeleton();
-    if (results.isEmpty) return _empty(scope);
+    if (results.isEmpty &&
+        _scResults.isEmpty &&
+        !_scLoading &&
+        _scError == null) {
+      return _empty(scope);
+    }
+
+    final bool hasLocal = results.isNotEmpty;
+    final int count = (hasLocal ? results.length : 0) + 2;
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(18, 6, 18, 100),
-      itemCount: results.length + 1,
+      itemCount: count,
       itemBuilder: (BuildContext context, int i) {
         if (i == 0) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 6, left: 4),
             child: Text(
-              '${results.length} результатов · ${_sources.length} источников',
+              hasLocal
+                  ? 'Локально · ${results.length} · SoundCloud ниже'
+                  : 'Результаты SoundCloud',
               style: TextStyle(
                   color: SonoraScope.of(context).palette.muted, fontSize: 11.5),
             ),
           );
         }
-        final Track t = results[i - 1];
-        return Appear(
-          delayMs: i * 40,
-          child: ListenableBuilder(
-            listenable: scope.player,
-            builder: (BuildContext context, _) => TrackTile(
-              track: t,
-              playing: scope.player.current?.id == t.id && scope.player.playing,
-              onPlay: () => scope.player.playQueue(results, startIndex: i - 1),
+        if (hasLocal && i <= results.length) {
+          final Track t = results[i - 1];
+          return Appear(
+            delayMs: i * 30,
+            child: ListenableBuilder(
+              listenable: scope.player,
+              builder: (BuildContext context, _) => TrackTile(
+                track: t,
+                playing:
+                    scope.player.current?.id == t.id && scope.player.playing,
+                onPlay: () =>
+                    scope.player.playQueue(results, startIndex: i - 1),
+              ),
             ),
-          ),
-        );
+          );
+        }
+        return _soundCloudSection(scope);
       },
+    );
+  }
+
+  Widget _soundCloudSection(SonoraScope scope) {
+    final AppPalette pal = scope.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 14, 4, 6),
+          child: Row(
+            children: <Widget>[
+              const Icon(Icons.cloud_rounded,
+                  size: 15, color: Color(0xFFFF5500)),
+              const SizedBox(width: 6),
+              Text('SoundCloud',
+                  style: TextStyle(
+                      color: pal.muted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6)),
+              const Spacer(),
+              if (_scLoading)
+                const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 1.6)),
+            ],
+          ),
+        ),
+        if (_scError != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Text(_scError!,
+                style: TextStyle(color: pal.muted, fontSize: 11.5)),
+          )
+        else if (!_scLoading && _scResults.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Text('Ничего не найдено в SoundCloud',
+                style: TextStyle(color: pal.muted, fontSize: 11.5)),
+          )
+        else
+          for (int i = 0; i < _scResults.length; i++)
+            Appear(
+              delayMs: i * 25,
+              child: ListenableBuilder(
+                listenable: scope.player,
+                builder: (BuildContext context, _) => TrackTile(
+                  track: _scResults[i],
+                  playing: scope.player.current?.id == _scResults[i].id &&
+                      scope.player.playing,
+                  onPlay: () =>
+                      scope.player.playQueue(_scResults, startIndex: i),
+                ),
+              ),
+            ),
+      ],
     );
   }
 

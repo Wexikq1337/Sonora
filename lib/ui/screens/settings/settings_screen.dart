@@ -7,6 +7,7 @@ import '../../../core/palette.dart';
 import '../../../models/settings.dart';
 import '../../../models/track.dart';
 import '../../../services/local_store.dart';
+import '../../../services/soundcloud/soundcloud_service.dart';
 import '../../../services/subsonic/subsonic_client.dart';
 import '../../../state/performance_monitor.dart';
 import '../../animations/motion.dart';
@@ -903,6 +904,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       subtitle: 'Аккаунты, приоритет и участие в поиске',
       children: <Widget>[
         const _ServerCard(),
+        const _SoundCloudCard(),
         for (int i = 0; i < MusicSource.values.length; i++)
           _SourceCard(source: MusicSource.values[i], connected: i < 3),
         const InfoNote(
@@ -1769,6 +1771,200 @@ class _ServerCardState extends State<_ServerCard> {
             borderRadius: BorderRadius.circular(11),
             borderSide: BorderSide(color: pal.accent, width: 1.2),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SoundCloudCard extends StatefulWidget {
+  const _SoundCloudCard();
+
+  @override
+  State<_SoundCloudCard> createState() => _SoundCloudCardState();
+}
+
+class _SoundCloudCardState extends State<_SoundCloudCard> {
+  bool _init = false;
+  bool _busy = false;
+  String? _status;
+  late final TextEditingController _cid;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_init) return;
+    _init = true;
+    _cid = TextEditingController(
+        text: SonoraScope.of(context).s.soundcloudClientId);
+  }
+
+  @override
+  void dispose() {
+    _cid.dispose();
+    super.dispose();
+  }
+
+  void _save(String v) => SonoraScope.of(context)
+      .settings
+      .update((AppSettings s) => s.copyWith(soundcloudClientId: v.trim()));
+
+  Future<void> _detect() async {
+    setState(() {
+      _busy = true;
+      _status = 'Ищу client_id в публичном плеере…';
+    });
+    final String? id = await SoundCloudService.detectClientId();
+    if (!mounted) return;
+    if (id == null) {
+      setState(() {
+        _busy = false;
+        _status = 'Не нашлось автоматически — вставь вручную';
+      });
+      return;
+    }
+    _cid.text = id;
+    _save(id);
+    setState(() {
+      _busy = false;
+      _status = 'client_id найден и сохранён';
+    });
+  }
+
+  Future<void> _test() async {
+    final String id = _cid.text.trim();
+    if (id.isEmpty) {
+      setState(() => _status = 'Вставь client_id или нажми «Найти»');
+      return;
+    }
+    _save(id);
+    setState(() {
+      _busy = true;
+      _status = 'Проверяю поиск…';
+    });
+    final SoundCloudService svc = SoundCloudService(id);
+    try {
+      final List<Track> r = await svc.search('ambient', limit: 3);
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _status =
+            r.isEmpty ? 'API ответил, но пусто' : 'Работает · ${r.length} трека';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _status = '$e';
+      });
+    } finally {
+      svc.dispose();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final SonoraScope scope = SonoraScope.of(context);
+    final AppPalette pal = scope.palette;
+    final bool configured = scope.s.soundcloudClientId.trim().isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: LiquidGlass(
+        radius: 20,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                const Icon(Icons.cloud_rounded,
+                    size: 18, color: Color(0xFFFF5500)),
+                const SizedBox(width: 8),
+                Text('SoundCloud',
+                    style: TextStyle(
+                        color: pal.text,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700)),
+                const Spacer(),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: configured
+                        ? const Color(0xFF57F287)
+                        : pal.muted.withOpacity(0.15),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Реальный поиск и воспроизведение из SoundCloud. Нужен client_id '
+              'публичного плеера — приложение умеет найти его само.',
+              style: TextStyle(color: pal.muted, fontSize: 11, height: 1.35),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _cid,
+              onSubmitted: _save,
+              onChanged: (String v) {
+                if (v.trim().length >= 20) _save(v);
+              },
+              style: TextStyle(color: pal.text, fontSize: 13),
+              cursorColor: pal.accent,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: Colors.black.withOpacity(0.24),
+                labelText: 'client_id',
+                hintText: '32 символа из network-вкладки soundcloud.com',
+                labelStyle: TextStyle(color: pal.muted, fontSize: 11.5),
+                hintStyle: TextStyle(
+                    color: pal.muted.withOpacity(0.55), fontSize: 11.5),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(11),
+                  borderSide:
+                      BorderSide(color: Colors.white.withOpacity(0.09)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(11),
+                  borderSide: BorderSide(color: pal.accent, width: 1.2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: <Widget>[
+                GlassChip(
+                  label: _busy ? 'Работаю…' : 'Найти автоматически',
+                  icon: Icons.travel_explore_rounded,
+                  selected: true,
+                  onTap: _busy ? null : _detect,
+                ),
+                GlassChip(
+                  label: 'Проверить',
+                  icon: Icons.play_arrow_rounded,
+                  onTap: _busy ? null : _test,
+                ),
+              ],
+            ),
+            if (_status != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(_status!,
+                  style: TextStyle(color: pal.muted, fontSize: 11)),
+            ],
+            const InfoNote(
+              text: 'Неофициальный web-API: SoundCloud ограничивает сторонние '
+                  'клиенты в ToS. Для личного использования; для продакшена — '
+                  'партнёрский договор.',
+              icon: Icons.gavel_rounded,
+            ),
+          ],
         ),
       ),
     );

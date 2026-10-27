@@ -110,8 +110,9 @@ class PlayerController extends ChangeNotifier {
     _error = null;
     position.value = Duration.zero;
     try {
-      await _engine?.load(t.isRemote ? t.url! : t.asset, t.duration,
-          remote: t.isRemote);
+      final String source =
+          t.isRemote ? await t.resolveStream() : t.asset;
+      await _engine?.load(source, t.duration, remote: t.isRemote);
       await _engine?.setVolume(_settings.value.volume);
       await _engine?.play();
       _playing = true;
