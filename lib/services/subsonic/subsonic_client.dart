@@ -54,7 +54,7 @@ class SubsonicClient {
 
   static const String _apiVersion = '1.16.1';
   static const String _clientName = 'Sonora';
-  static const Random _rnd = Random.secure();
+  static final Random _rnd = Random.secure();
 
   final String _salt;
 

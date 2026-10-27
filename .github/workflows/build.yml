@@ -50,9 +50,24 @@ jobs:
         run: flutter pub get
 
       # Fails in ~60 s with "file.dart:LINE:COL: Error: ..." instead of a
-      # 3-minute native build error.
+      # 3-minute native build error. Errors are also written to the run
+      # summary, so they are visible without opening the raw log.
       - name: Static analysis
-        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+        shell: bash
+        run: |
+          flutter analyze --no-fatal-warnings --no-fatal-infos > analyze.log 2>&1 || true
+          ERRORS="$(grep -E '^ *error ' analyze.log || true)"
+          if [ -n "$ERRORS" ]; then
+            {
+              echo '### Analyze errors'
+              echo '```'
+              echo "$ERRORS"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "$ERRORS"
+            exit 1
+          fi
+          echo 'analyze: no errors'
 
       - name: Build release
         run: flutter build windows --release
@@ -117,9 +132,24 @@ jobs:
         run: flutter pub get
 
       # Fails in ~60 s with "file.dart:LINE:COL: Error: ..." instead of a
-      # 3-minute native build error.
+      # 3-minute native build error. Errors are also written to the run
+      # summary, so they are visible without opening the raw log.
       - name: Static analysis
-        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+        shell: bash
+        run: |
+          flutter analyze --no-fatal-warnings --no-fatal-infos > analyze.log 2>&1 || true
+          ERRORS="$(grep -E '^ *error ' analyze.log || true)"
+          if [ -n "$ERRORS" ]; then
+            {
+              echo '### Analyze errors'
+              echo '```'
+              echo "$ERRORS"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "$ERRORS"
+            exit 1
+          fi
+          echo 'analyze: no errors'
 
       - name: Build APK
         run: flutter build apk --release --split-per-abi

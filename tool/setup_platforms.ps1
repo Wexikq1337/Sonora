@@ -46,7 +46,9 @@ $mf = Join-Path $root "android\app\src\main\AndroidManifest.xml"
 if (Test-Path $mf) {
   $x = Get-Content $mf -Raw
   if ($x -notmatch 'android.permission.INTERNET') {
-    $x = $x -replace '<application', '<uses-permission android:name="android.permission.INTERNET" />' + "`r`n    " + '<application'
+    $insert = '<uses-permission android:name="android.permission.INTERNET" />' +
+      "`r`n    " + '<application'
+    $x = $x -replace '<application', $insert
     Write-Host "added INTERNET permission" -ForegroundColor Green
   }
   if ($x -notmatch 'usesCleartextTraffic') {
