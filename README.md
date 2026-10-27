@@ -176,12 +176,17 @@ git push -u origin main
 ```
 
 `.github/workflows/build.yml` сам:
-1. сгенерирует `windows/`, `linux/`, `android/` (в репозитории их нет — см. `.gitignore`);
-2. соберёт `Sonora-<ver>-portable-win64.zip`, `Sonora-<ver>-setup.exe` (Inno Setup),
-   `Sonora-arm64.apk`, `Sonora-linux-x64.tar.gz`;
+1. сгенерирует `windows/`, `android/` (в репозитории их нет — см. `.gitignore`);
+2. соберёт `Sonora-<ver>-portable-win64.zip`, `Sonora-<ver>-setup.exe` (Inno Setup)
+   и `Sonora-arm64.apk`;
 3. положит всё в **Artifacts** запуска.
 
 Скачать: **Actions → build → последний run → Artifacts**.
+
+> **Linux** временно вынесен в отдельный workflow `build-linux.yml` с ручным
+> запуском (Actions → build-linux → Run workflow): на раннере падает сборка
+> из-за GStreamer/CMake, и в общем пайплайне он красит весь прогон в красный.
+> Вернём в основную матрицу, когда починим зависимости.
 
 Чтобы файлы прикрепились к релизу:
 
@@ -190,5 +195,5 @@ git tag v1.0.0 && git push --tags
 ```
 
 Ограничения GitHub: публичные репозитории — Actions бесплатны без лимита,
-приватные — 2000 минут/мес (Windows-раннер считается ×2). Полная сборка ~6–8 мин.
+приватные — 2000 минут/мес (Windows-раннер считается ×2). Полная сборка ~5–7 мин.
 
