@@ -60,10 +60,12 @@ jobs:
       - name: Portable ZIP
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
           $rel = "build\windows\x64\runner\Release"
           if (-not (Test-Path "$rel\flutter_windows.dll")) { throw "Release folder not found" }
           Set-Content -Path "$rel\PORTABLE.txt" -Value "Portable build. Settings: %APPDATA%\Sonora." -Encoding UTF8
           Compress-Archive -Path "$rel\*" -DestinationPath "dist\${{ env.APP_NAME }}-${{ steps.ver.outputs.version }}-portable-win64.zip" -Force
+          Get-ChildItem dist | Format-Table Name, Length
 
       - name: Installer (Inno Setup)
         shell: pwsh
