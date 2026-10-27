@@ -1,0 +1,28 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+dist/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Generated platform folders (run tool/setup_platforms.*)
+/windows/
+/linux/
+/android/
+/ios/
+/macos/
+/web/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local
+*.log
+/settings.json

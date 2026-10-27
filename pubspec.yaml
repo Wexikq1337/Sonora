@@ -1,0 +1,27 @@
+name: sonora
+description: "Sonora — glassmorphism music player demo (Linux / Windows / Android)."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Real audio playback: MediaPlayer (Android), Media Foundation (Windows),
+  # GStreamer (Linux). Falls back to a simulated clock if unavailable.
+  audioplayers: ^6.1.0
+  # Used for the Win32 named-pipe transport of Discord IPC (no plugins).
+  ffi: ^2.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/
+  shaders:
+    - shaders/glass.frag
