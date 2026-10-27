@@ -239,7 +239,7 @@ class DiscordPresenceService extends ChangeNotifier {
     if (tooSoon && !force) {
       _pending = model;
       _flushTimer?.cancel();
-      final int waitMs = 15000 - now.difference(last!).inMilliseconds;
+      final int waitMs = 15000 - now.difference(last).inMilliseconds;
       _flushTimer = Timer(Duration(milliseconds: waitMs < 0 ? 0 : waitMs), () {
         final PresenceModel? p = _pending;
         if (p != null) _push(p, force: true);

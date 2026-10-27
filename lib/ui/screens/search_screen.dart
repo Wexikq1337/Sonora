@@ -211,7 +211,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _idle(SonoraScope scope) {
-    final AppPalette pal = scope.palette;
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 100),
       children: <Widget>[

@@ -1,4 +1,4 @@
-import '../models/track.dart';
+import '../../models/track.dart';
 
 /// Renders the user-editable part of a Discord Rich Presence activity.
 ///

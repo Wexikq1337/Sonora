@@ -10,7 +10,6 @@ import '../../models/track.dart';
 import '../../state/performance_monitor.dart';
 import '../../state/player_controller.dart';
 import '../animations/animated_background.dart';
-import '../animations/motion.dart';
 import '../animations/visualizer.dart';
 import '../glass/glass.dart';
 import '../widgets/artwork.dart';

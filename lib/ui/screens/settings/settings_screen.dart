@@ -1,17 +1,13 @@
 import 'dart:io';
-import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 
 import '../../../app_scope.dart';
 import '../../../core/palette.dart';
-import '../../../core/format.dart';
 import '../../../models/settings.dart';
 import '../../../models/track.dart';
-import '../../../services/discord/discord_presence_service.dart';
 import '../../../services/local_store.dart';
 import '../../../state/performance_monitor.dart';
-import '../../../state/player_controller.dart';
 import '../../animations/motion.dart';
 import '../../glass/glass.dart';
 import '../equalizer_sheet.dart';

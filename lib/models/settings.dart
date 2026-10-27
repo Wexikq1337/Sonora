@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-
 double _d(dynamic v, double fallback) =>
     v is num ? v.toDouble() : (v is String ? double.tryParse(v) ?? fallback : fallback);
 int _i(dynamic v, int fallback) => v is num ? v.toInt() : fallback;

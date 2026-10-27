@@ -10,7 +10,6 @@ import '../../../models/settings.dart';
 import '../../../models/track.dart';
 import '../../../services/discord/discord_presence_service.dart';
 import '../../../services/discord/discord_template.dart';
-import '../../../state/player_controller.dart';
 import '../../glass/glass.dart';
 import 'settings_widgets.dart';
 

@@ -1,10 +1,7 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 
 import '../../app_scope.dart';
 import '../../core/format.dart';
-import '../../core/palette.dart';
 import '../../models/track.dart';
 import '../../state/player_controller.dart';
 import '../animations/motion.dart';

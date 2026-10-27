@@ -395,6 +395,7 @@ class _GlassButtonState extends State<GlassButton>
     final AppPalette pal = SonoraScope.of(context).palette;
     final bool active = widget.selected;
     final Widget content = AnimatedContainer(
+      duration: motionDuration(context, 160),
       constraints: widget.minSize > 0
           ? BoxConstraints(minWidth: widget.minSize, minHeight: widget.minSize)
           : const BoxConstraints(),

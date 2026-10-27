@@ -171,8 +171,7 @@ class _BackgroundPainter extends CustomPainter {
           ],
           stops: const <double>[0.45, 1.0],
         ).createShader(rect),
-      );
-    r.hashCode; // keep analyzer quiet about unused local
+    );
   }
 
   void _orb(
